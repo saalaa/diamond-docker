@@ -1,18 +1,32 @@
 version: '2'
-services:
-  db:
-    image: postgres
 
-  cache:
+services:
+  postgresql:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: diamond
+      POSTGRES_USER: diamond
+      POSTGRES_DB: diamond
+
+  redis:
     image: redis
 
   web:
     build: .
     env_file:
       - .env
-    command: gunicorn diamond:app -b 0.0.0.0:8080
+    command: ['web']
     ports:
       - 8080:8080
     depends_on:
-      - db
-      - cache
+      - postgresql
+      - redis
+
+  worker:
+    build: .
+    env_file:
+      - .env
+    command: ['worker']
+    depends_on:
+      - postgresql
+      - redis
